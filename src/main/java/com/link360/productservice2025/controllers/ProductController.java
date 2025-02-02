@@ -1,6 +1,7 @@
 package com.link360.productservice2025.controllers;
 
 
+import com.link360.productservice2025.Mapper.Mapper;
 import com.link360.productservice2025.dtos.GetSingleProductResponseDto;
 import com.link360.productservice2025.dtos.ProductDto;
 import com.link360.productservice2025.models.Product;
@@ -8,6 +9,8 @@ import com.link360.productservice2025.services.ProductService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/products")
@@ -20,8 +23,10 @@ public class ProductController {
     }
 
     @GetMapping()
-    public String getAllProducts(){
-        return "Getting All Products";
+    public ResponseEntity<List<Product>> getAllProducts(){
+
+        List<Product> products = productService.getAllProducts();
+        return new ResponseEntity<>(products, HttpStatus.OK);
     }
 
     @GetMapping("/{productId}")
@@ -36,18 +41,26 @@ public class ProductController {
         );
     }
 
-    @PostMapping()
-    public String addNewProduct(@RequestBody ProductDto productDto) {
-        return "Adding new product " + productDto;
+    @PostMapping
+    public ResponseEntity<ProductDto> addNewProduct(@RequestBody ProductDto productDto) {
+
+
+        // Return the created product with HTTP 201 (Created)
+        return new ResponseEntity<>(Mapper.toProductDto(productService.addNewProduct(productDto)), HttpStatus.CREATED);
     }
 
-    @PutMapping("/{productId}")
-    public String updateProduct(@PathVariable("productId") Long productId){
-        return "Updating Product with productId: "  + productId;
+
+    @PatchMapping("/{productId}")
+    public ResponseEntity<ProductDto> updateProduct(@PathVariable("productId") Long productId, @RequestBody ProductDto productDto){
+
+        return new ResponseEntity<>(Mapper.toProductDto(productService.updateProduct(productId, Mapper.toProduct(productDto))), HttpStatus.OK);
     }
 
     @DeleteMapping("/{productId}")
-    public String deleteProduct(@PathVariable("productId") Long productId){
-        return "Deleting Product with productId: " + productId;
+    public ResponseEntity<ProductDto> deleteProduct(@PathVariable("productId") Long productId) {
+
+        return new ResponseEntity<>(Mapper.toProductDto(productService.deleteProduct(productId)), HttpStatus.OK);
+
     }
+
 }
