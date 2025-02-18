@@ -2,15 +2,18 @@ package com.link360.productservice2025.controllers;
 
 
 import com.link360.productservice2025.Mapper.Mapper;
-import com.link360.productservice2025.dtos.GetSingleProductResponseDto;
+import com.link360.productservice2025.dtos.ErrorResponseDto;
 import com.link360.productservice2025.dtos.ProductDto;
+import com.link360.productservice2025.exceptions.NotFoundException;
 import com.link360.productservice2025.models.Product;
 import com.link360.productservice2025.services.ProductService;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/products")
@@ -18,7 +21,7 @@ public class ProductController {
 
     private final ProductService productService;
 
-    public ProductController(ProductService productService) {
+    public ProductController(@Qualifier("FakeStoreProductService") ProductService productService) {
         this.productService = productService;
     }
 
@@ -30,13 +33,18 @@ public class ProductController {
     }
 
     @GetMapping("/{productId}")
-    public ResponseEntity<GetSingleProductResponseDto> getSingleProduct(@PathVariable("productId") Long productId){
+    public ResponseEntity<Product> getSingleProduct(@PathVariable("productId") Long productId) throws NotFoundException {
 
-        GetSingleProductResponseDto responseDto = new GetSingleProductResponseDto();
-        responseDto.setProduct(productService.getSingleProduct(productId));
+        Optional<Product> productOptional = Optional.ofNullable(productService.getSingleProduct(productId));
+
+        if(productOptional.isEmpty()){
+            throw new NotFoundException("No Product With id product id" + productId);
+        }
+
+
 
         return new ResponseEntity<>(
-                responseDto,
+                productService.getSingleProduct(productId),
                 HttpStatus.OK
         );
     }
@@ -62,5 +70,7 @@ public class ProductController {
         return new ResponseEntity<>(Mapper.toProductDto(productService.deleteProduct(productId)), HttpStatus.OK);
 
     }
+
+
 
 }

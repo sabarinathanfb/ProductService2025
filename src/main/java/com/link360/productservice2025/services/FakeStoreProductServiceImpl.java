@@ -1,10 +1,10 @@
 package com.link360.productservice2025.services;
 
+import com.link360.productservice2025.exceptions.NotFoundException;
 import org.springframework.lang.Nullable;
 import com.link360.productservice2025.Mapper.Mapper;
 import com.link360.productservice2025.dtos.FakeStoreProductDto;
 import com.link360.productservice2025.dtos.ProductDto;
-import com.link360.productservice2025.models.Category;
 import com.link360.productservice2025.models.Product;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpMethod;
@@ -19,7 +19,7 @@ import org.springframework.web.client.RestTemplate;
 import java.util.ArrayList;
 import java.util.List;
 
-@Service
+@Service("FakeStoreProductService")
 public class FakeStoreProductServiceImpl implements ProductService {
 
     private final RestTemplateBuilder restTemplateBuilder;
@@ -60,7 +60,7 @@ public class FakeStoreProductServiceImpl implements ProductService {
     }
 
     @Override
-    public Product getSingleProduct(Long productId) {
+    public Product getSingleProduct(Long productId) throws NotFoundException {
 
         RestTemplate restTemplate = restTemplateBuilder.build();
         ResponseEntity<FakeStoreProductDto> response = restTemplate.
@@ -69,6 +69,11 @@ public class FakeStoreProductServiceImpl implements ProductService {
                         FakeStoreProductDto.class,
                         productId
                 );
+
+        if(response.getBody() == null){
+            throw new NotFoundException("No Product With id product id\" + productId");
+        }
+
         return Mapper.convertFakseStoreProductDtoToProduct(response.getBody());
 
     }
